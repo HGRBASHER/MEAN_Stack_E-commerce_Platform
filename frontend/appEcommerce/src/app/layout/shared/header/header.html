@@ -1,0 +1,34 @@
+<header>
+  <nav class="navbar">
+    <h1 class="logo">Élégance<span class="dot">.</span></h1>
+    <ul class="nav-links">
+      <a routerLink="home" routerLinkActive="activeLink">Home</a>
+      <a routerLink="products" routerLinkActive="activeLink">Products</a>
+      <a routerLink="order" routerLinkActive="activeLink">My Orders</a>
+      @if(isAdmin() === true) {
+        <a routerLink="dashboard" routerLinkActive="activeLink">Dashboard</a>
+      }
+      @if(userName !== '') {
+        <div class="user-info">
+          <button class="logout-btn" (click)="logout()">
+            <span class="btn-icon"></span>
+            Logout
+          </button>
+        </div>
+      } @else {
+        <a routerLink="login" routerLinkActive="activeLink" class="login-btn">
+          <span class="btn-icon"></span>
+          Login
+        </a>
+      }
+
+      <!-- Cart Link with Badge -->
+      <a routerLink="cart" routerLinkActive="activeLink" class="cart-link">
+        <span class="cart-icon">🛒</span>
+        @if(cartItemCount > 0) {
+          <span class="cart-badge">{{ cartItemCount }}</span>
+        }
+      </a>
+    </ul>
+  </nav>
+</header>

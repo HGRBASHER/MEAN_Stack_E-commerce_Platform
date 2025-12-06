@@ -1,0 +1,30 @@
+<app-header></app-header>
+
+<div class="container">
+  <div class="user-welcome-section">
+    @if(name !== '') {
+      <div class="welcome-content">
+        <div class="welcome-left">
+          <span class="welcome-icon"></span>
+          <span class="welcome-text">Welcome back, <strong>{{ name }}</strong>!</span>
+        </div>
+        <div class="user-actions">
+          <button class="logout-btn" (click)="logout()">
+            <span class="btn-icon"></span>
+            Logout
+          </button>
+        </div>
+      </div>
+    } @else {
+      <div class="login-prompt">
+        <a class="login-link" routerLink="login" routerLinkActive="activeLink">
+          <span class="link-icon"></span>
+          Login to your account
+        </a>
+      </div>
+    }
+  </div>
+</div>
+
+<router-outlet />
+

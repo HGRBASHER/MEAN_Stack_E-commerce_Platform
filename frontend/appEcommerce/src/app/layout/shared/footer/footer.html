@@ -1,0 +1,73 @@
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<footer class="footer">
+  <div *ngIf="isLoading" class="loading">Loading footer...</div>
+
+  <div *ngIf="footerData && !isLoading" class="footer-container">
+    <div class="footer-content">
+
+      <!-- Company Info -->
+      <div class="footer-section">
+        <h3 class="footer-name">{{ footerData.name }}</h3>
+        <p class="footer-desc">{{ footerData.desc }}</p>
+      </div>
+
+      <!-- Contact Info -->
+      <div class="footer-section" *ngIf="footerData.phone || footerData.address">
+        <h4>Contact Us</h4>
+        <div class="contact-info">
+          <p *ngIf="footerData.phone" class="contact-item">
+            <i class="fas fa-phone"></i>
+            {{ footerData.phone }}
+          </p>
+          <p *ngIf="footerData.address" class="contact-item">
+            <i class="fas fa-map-marker-alt"></i>
+            {{ footerData.address }}
+          </p>
+        </div>
+      </div>
+
+      <!-- Social Links -->
+      <div class="footer-section" *ngIf="footerData.facebook || footerData.github || footerData.linkedin || footerData.instagram">
+        <h4>Follow Us</h4>
+        <div class="social-links">
+          <a *ngIf="footerData.facebook"
+             [href]="footerData.facebook"
+             target="_blank"
+             class="social-link"
+             aria-label="Facebook">
+            <i class="fab fa-facebook"></i>
+          </a>
+
+          <a *ngIf="footerData.github"
+             [href]="footerData.github"
+             target="_blank"
+             class="social-link"
+             aria-label="GitHub">
+            <i class="fab fa-github"></i>
+          </a>
+
+          <a *ngIf="footerData.linkedin"
+             [href]="footerData.linkedin"
+             target="_blank"
+             class="social-link"
+             aria-label="LinkedIn">
+            <i class="fab fa-linkedin"></i>
+          </a>
+
+          <a *ngIf="footerData.instagram"
+             [href]="footerData.instagram"
+             target="_blank"
+             class="social-link"
+             aria-label="Instagram">
+            <i class="fab fa-instagram"></i>
+          </a>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="footer-bottom">
+      <p>&copy; {{ currentYear }} {{ footerData.name }}. All rights reserved.</p>
+    </div>
+  </div>
+</footer>

@@ -1,0 +1,103 @@
+<div class="footer-admin">
+  <h2>Manage Footer Content</h2>
+
+  <div *ngIf="isLoading" class="loading">Loading footer data...</div>
+
+  <form *ngIf="!isLoading" (ngSubmit)="submit()" class="footer-form">
+
+    <div class="form-group">
+      <label for="name">Name *</label>
+      <input
+        type="text"
+        id="name"
+        placeholder="Your Company Name"
+        [(ngModel)]="form.name"
+        name="name"
+        required>
+    </div>
+
+    <div class="form-group">
+      <label for="desc">Description *</label>
+      <textarea
+        id="desc"
+        placeholder="Company description or tagline"
+        [(ngModel)]="form.desc"
+        name="desc"
+        rows="4"
+        required></textarea>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="phone">Phone Number</label>
+        <input
+          type="tel"
+          id="phone"
+          placeholder="+1 234 567 890"
+          [(ngModel)]="form.phone"
+          name="phone">
+      </div>
+
+      <div class="form-group">
+        <label for="address">Address</label>
+        <input
+          type="text"
+          id="address"
+          placeholder="123 Main Street, City, Country"
+          [(ngModel)]="form.address"
+          name="address">
+      </div>
+    </div>
+
+    <h3>Social Media Links</h3>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="facebook">Facebook</label>
+        <input
+          type="url"
+          id="facebook"
+          placeholder="https://facebook.com/yourpage"
+          [(ngModel)]="form.facebook"
+          name="facebook">
+      </div>
+
+      <div class="form-group">
+        <label for="github">GitHub</label>
+        <input
+          type="url"
+          id="github"
+          placeholder="https://github.com/yourusername"
+          [(ngModel)]="form.github"
+          name="github">
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="linkedin">LinkedIn</label>
+        <input
+          type="url"
+          id="linkedin"
+          placeholder="https://linkedin.com/in/yourprofile"
+          [(ngModel)]="form.linkedin"
+          name="linkedin">
+      </div>
+
+      <div class="form-group">
+        <label for="instagram">Instagram</label>
+        <input
+          type="url"
+          id="instagram"
+          placeholder="https://instagram.com/yourprofile"
+          [(ngModel)]="form.instagram"
+          name="instagram">
+      </div>
+    </div>
+
+    <button type="submit" [disabled]="isSaving" class="btn-primary">
+      {{ isSaving ? 'Updating...' : 'Update Footer' }}
+    </button>
+
+  </form>
+</div>

@@ -1,0 +1,117 @@
+<div class="products-page">
+  <!-- Filter Section -->
+  <div class="filter-section">
+    <h2>Browse Products</h2>
+
+    <div class="filter-box">
+      <div class="filter-group">
+        <input
+          type="text"
+          [(ngModel)]="searchTerm"
+          (input)="applyFilters()"
+          placeholder="Search products..."
+          class="search-input">
+      </div>
+      <div class="filter-group">
+        <label for="category">Category:</label>
+        <select
+          id="category"
+          [(ngModel)]="selectedCategory"
+          (change)="onCategoryChange()"
+          class="filter-select">
+          <option value="">All Categories</option>
+          <option *ngFor="let category of categories" [value]="category._id">
+            {{ category.name }}
+          </option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label for="subcategory">Subcategory:</label>
+        <select
+          id="subcategory"
+          [(ngModel)]="selectedSubcategory"
+          (change)="applyFilters()"
+          [disabled]="!selectedCategory"
+          class="filter-select">
+          <option value="">All Subcategories</option>
+          <option *ngFor="let subcategory of getFilteredSubcategories()" [value]="subcategory._id">
+            {{ subcategory.name }}
+          </option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <button (click)="resetFilters()" class="reset-btn">
+          Reset Filters
+        </button>
+      </div>
+    </div>
+    <div class="active-filters" *ngIf="selectedCategory || selectedSubcategory || searchTerm">
+      <h4>Active Filters:</h4>
+      <div class="filter-tags">
+        <span *ngIf="selectedCategory" class="filter-tag">
+          Category: {{ getCategoryNameById(selectedCategory) }}
+          <button (click)="selectedCategory = ''; onCategoryChange()">×</button>
+        </span>
+        <span *ngIf="selectedSubcategory" class="filter-tag">
+          Subcategory: {{ getSubcategoryNameById(selectedSubcategory) }}
+          <button (click)="selectedSubcategory = ''; applyFilters()">×</button>
+        </span>
+        <span *ngIf="searchTerm" class="filter-tag">
+          Search: "{{ searchTerm }}"
+          <button (click)="searchTerm = ''; applyFilters()">×</button>
+        </span>
+      </div>
+    </div>
+  </div>
+  <div class="products-count">
+    <p>Showing {{ filteredProducts.length }} of {{ products.length }} products</p>
+  </div>
+  <div class="debug-info" *ngIf="false">
+    <h4>Debug Information:</h4>
+    <p>Categories: {{ categories.length }}</p>
+    <p>Subcategories: {{ subcategories.length }}</p>
+    <p>Products: {{ products.length }}</p>
+    <p>Selected Category: {{ selectedCategory }}</p>
+    <p>Selected Subcategory: {{ selectedSubcategory }}</p>
+    <p>Filtered Subcategories: {{ getFilteredSubcategories().length }}</p>
+  </div>
+  <div class="products-grid">
+    @for(product of filteredProducts; track product._id){
+      <div class="product-card">
+  <img [src]="staticURL + '/' + product.imgURL" alt="{{product.name}}" class="product-image">
+  <div class="product-content">
+    <h3>{{product.name}}</h3>
+    <p class="product-description">{{product.description}}</p>
+    <p class="product-price">Price: {{product.price}}$</p>
+    <p class="product-category">
+      <small>{{ getCategoryName(product) }} › {{ getSubcategoryName(product) }}</small>
+    </p>
+
+    <div class="product-actions">
+      <a class="product-details-link" [routerLink]="'/products/' + product.slug" routerLinkActive="activeLink">
+        <span>🔍</span>
+        More Details
+      </a>
+      <button class="add-to-cart-btn" (click)="addToCart(product)">
+        <span>🛒</span>
+        Add to Cart
+      </button>
+    </div>
+  </div>
+</div>
+    }
+    @if(filteredProducts.length === 0 && products.length > 0){
+      <div class="no-products">
+        <h3>No products found</h3>
+        <p>Try adjusting your filters or search term</p>
+        <button (click)="resetFilters()" class="reset-btn">Show All Products</button>
+      </div>
+    }
+    @if(products.length === 0){
+      <div class="no-products">
+        <h3>No products available</h3>
+        <p>Check back later for new products</p>
+      </div>
+    }
+  </div>
+</div>

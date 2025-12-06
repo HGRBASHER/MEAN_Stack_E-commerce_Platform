@@ -1,0 +1,372 @@
+<div class="users-container">
+  <!-- Header -->
+  <div class="users-header">
+    <h1><i class="bi bi-people-fill"></i> Users Management</h1>
+
+    <div class="tabs">
+      <button class="tab-btn" [class.active]="activeTab === 'users'" (click)="activeTab = 'users'">
+        <i class="bi bi-people"></i> Users
+      </button>
+      <button class="tab-btn" [class.active]="activeTab === 'testimonials'" (click)="activeTab = 'testimonials'">
+        <i class="bi bi-chat-left-text"></i> Testimonials
+        <span class="badge bg-warning" *ngIf="pendingTestimonialsCount > 0">
+          {{ pendingTestimonialsCount }}
+        </span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Users Tab -->
+  <div *ngIf="activeTab === 'users'" class="tab-content">
+    <div class="users-controls">
+      <div class="search-box">
+        <i class="bi bi-search"></i>
+        <input
+          type="text"
+          placeholder="Search users..."
+          [(ngModel)]="searchTerm"
+          (input)="filterUsers()">
+      </div>
+
+      <button class="btn btn-primary" (click)="loadUsers()">
+        <i class="bi bi-arrow-clockwise"></i> Refresh
+      </button>
+    </div>
+
+    <!-- Loading -->
+    <div *ngIf="loading" class="loading">
+      <div class="spinner-border text-primary"></div>
+      <p>Loading users...</p>
+    </div>
+
+    <!-- Users Table -->
+    <div *ngIf="!loading && users.length > 0" class="table-responsive">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>User Info</th>
+            <th>Contact</th>
+            <th>Role</th>
+            <th>Orders</th>
+            <th>Reviews</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let user of filteredUsers; let i = index">
+            <td>{{ i + 1 }}</td>
+            <td>
+              <div class="user-avatar-sm">
+                {{ user.name?.charAt(0) || 'U' }}
+              </div>
+              <strong>{{ user.name }}</strong>
+              <br>
+              <small class="text-muted">ID: {{ user._id?.slice(-6) }}</small>
+            </td>
+            <td>
+              <div>{{ user.email }}</div>
+              <small class="text-muted">{{ user.phone || 'No phone' }}</small>
+            </td>
+            <td>
+              <span class="badge" [ngClass]="{
+                'bg-danger': user.role === 'admin',
+                'bg-primary': user.role === 'user'
+              }">
+                {{ user.role }}
+              </span>
+            </td>
+            <td>
+              <button class="btn btn-sm btn-outline-info"
+                      (click)="viewUserOrders(user)"
+                      *ngIf="user.role === 'user'">
+                <i class="bi bi-cart"></i> View Orders
+              </button>
+              <span class="text-muted" *ngIf="user.role === 'admin'">N/A</span>
+            </td>
+            <td>
+              <button class="btn btn-sm btn-outline-warning"
+                      (click)="viewUserTestimonials(user)">
+                <i class="bi bi-chat-left-text"></i> Reviews
+              </button>
+            </td>
+            <td>
+              <div class="btn-group">
+                
+                <button class="btn btn-sm btn-outline-danger"
+                        (click)="deleteUser(user._id, user.name)"
+                        *ngIf="user.role !== 'admin'">
+                  <i class="bi bi-trash"></i>
+                  Delete
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!loading && users.length === 0" class="empty-state">
+      <i class="bi bi-people"></i>
+      <h3>No Users Found</h3>
+    </div>
+  </div>
+
+  <!-- Testimonials Tab -->
+  <div *ngIf="activeTab === 'testimonials'" class="tab-content">
+    <div class="alert alert-info">
+      <i class="bi bi-info-circle"></i>
+      Use the "Reviews" button in the Users tab to manage testimonials for each user.
+    </div>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show">
+    {{ errorMessage }}
+    <button type="button" class="btn-close" (click)="errorMessage = ''"></button>
+  </div>
+
+  <!-- Orders Modal -->
+  <div *ngIf="showOrdersModal" class="modal-backdrop show" (click)="closeOrdersModal()"></div>
+  <div *ngIf="showOrdersModal" class="modal show d-block">
+    <div class="modal-dialog modal-lg" (click)="$event.stopPropagation()">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">
+            <i class="bi bi-cart"></i> Orders for {{ selectedUser?.name }}
+          </h5>
+          <button type="button" class="btn-close" (click)="closeOrdersModal()"></button>
+        </div>
+        <div class="modal-body">
+          <!-- Orders Loading -->
+          <div *ngIf="ordersLoading" class="text-center py-4">
+            <div class="spinner-border"></div>
+            <p>Loading orders...</p>
+          </div>
+
+          <!-- Orders Table -->
+          <div *ngIf="!ordersLoading && userOrders.length > 0" class="table-responsive">
+            <table class="table table-sm">
+              <thead>
+                <tr>
+                  <th>Order ID</th>
+                  <th>Date</th>
+                  <th>Total</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let order of userOrders">
+                  <td><small>{{ order._id?.slice(-8) }}</small></td>
+                  <td>{{ formatDate(order.createdAt) }}</td>
+                  <td>${{ order.totalPrice?.toFixed(2) }}</td>
+                  <td>
+                    <span class="badge" [ngClass]="getStatusBadgeClass(order.status)">
+                      {{ order.status }}
+                    </span>
+                  </td>
+                  <td>
+                    <button class="btn btn-sm btn-outline-primary"
+                            (click)="openUpdateStatusModal(order)">
+                      <i class="bi bi-pencil"></i> Change Status
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- No Orders -->
+          <div *ngIf="!ordersLoading && userOrders.length === 0" class="text-center py-4">
+            <i class="bi bi-cart-x" style="font-size: 48px; color: #ccc;"></i>
+            <p class="mt-3">No orders found for this user.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Update Status Modal -->
+  <div *ngIf="selectedOrder" class="modal-backdrop show"></div>
+  <div *ngIf="selectedOrder" class="modal show d-block">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Update Order Status</h5>
+          <button type="button" class="btn-close" (click)="closeUpdateStatusModal()"></button>
+        </div>
+        <div class="modal-body">
+          <p>Order: <strong>{{ selectedOrder._id?.slice(-8) }}</strong></p>
+          <p>Current Status:
+            <span class="badge" [ngClass]="getStatusBadgeClass(selectedOrder.status)">
+              {{ selectedOrder.status }}
+            </span>
+          </p>
+
+          <div class="mb-3">
+            <label class="form-label">New Status</label>
+            <select class="form-select" [(ngModel)]="newStatus">
+              <option value="pending">Pending</option>
+              <option value="preparing">Preparing</option>
+              <option value="shipped">Shipped</option>
+              <option value="delivered">Delivered</option>
+              <option value="cancelled">Cancelled</option>
+              <option value="returned">Returned</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeUpdateStatusModal()">
+            Cancel
+          </button>
+          <button type="button" class="btn btn-primary" (click)="updateOrderStatus()">
+            Update Status
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Testimonials Modal -->
+  <div *ngIf="showTestimonialsModal" class="modal-backdrop show" (click)="closeTestimonialsModal()"></div>
+  <div *ngIf="showTestimonialsModal" class="modal show d-block">
+    <div class="modal-dialog modal-lg" (click)="$event.stopPropagation()">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">
+            <i class="bi bi-chat-left-text"></i> Reviews for {{ selectedUser?.name }}
+          </h5>
+          <button type="button" class="btn-close" (click)="closeTestimonialsModal()"></button>
+        </div>
+        <div class="modal-body">
+          <!-- Testimonials Loading -->
+          <div *ngIf="testimonialsLoading" class="text-center py-4">
+            <div class="spinner-border"></div>
+            <p>Loading reviews...</p>
+          </div>
+
+          <!-- Testimonials List -->
+          <div *ngIf="!testimonialsLoading && userTestimonials.length > 0" class="testimonials-list">
+            <div *ngFor="let testimonial of userTestimonials" class="testimonial-item card mb-3">
+              <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <div>
+                    <h6 class="mb-1">
+                      Order: {{ getOrderDisplay(testimonial.order) }}
+                    </h6>
+                    <span class="badge" [ngClass]="getTestimonialStatusClass(testimonial.status)">
+                      {{ testimonial.status }}
+                    </span>
+                  </div>
+                  <div class="rating">
+                    <span *ngFor="let star of [1,2,3,4,5]" class="me-1">
+                      <i class="bi" [class.bi-star-fill]="star <= testimonial.rating"
+                         [class.bi-star]="star > testimonial.rating"
+                         [class.text-warning]="star <= testimonial.rating"></i>
+                    </span>
+                  </div>
+                </div>
+
+                <p class="mb-2">{{ testimonial.comment }}</p>
+
+                <div class="text-muted small mb-3">
+                  Submitted: {{ formatDate(testimonial.createdAt) }}
+                  <span *ngIf="testimonial.adminNotes">
+                    <br>Admin Notes: {{ testimonial.adminNotes }}
+                  </span>
+                </div>
+
+                <!-- Action Buttons for Pending Testimonials -->
+                <div *ngIf="testimonial.status === 'pending'" class="d-flex gap-2">
+                  <button class="btn btn-sm btn-success"
+                          (click)="openApproveModal(testimonial)">
+                    <i class="bi bi-check-circle"></i> Approve
+                  </button>
+                  <button class="btn btn-sm btn-danger"
+                          (click)="openRejectModal(testimonial)">
+                    <i class="bi bi-x-circle"></i> Reject
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- No Testimonials -->
+          <div *ngIf="!testimonialsLoading && userTestimonials.length === 0" class="text-center py-4">
+            <i class="bi bi-chat-left" style="font-size: 48px; color: #ccc;"></i>
+            <p class="mt-3">No reviews found for this user.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Approve Testimonial Modal -->
+  <div *ngIf="selectedTestimonial" class="modal-backdrop show"></div>
+  <div *ngIf="selectedTestimonial" class="modal show d-block">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Approve Review</h5>
+          <button type="button" class="btn-close" (click)="closeTestimonialModal()"></button>
+        </div>
+        <div class="modal-body">
+          <p><strong>Rating:</strong> {{ selectedTestimonial.rating }}/5</p>
+          <p><strong>Comment:</strong> {{ selectedTestimonial.comment }}</p>
+
+          <div class="mb-3">
+            <label class="form-label">Admin Notes (Optional)</label>
+            <textarea class="form-control" rows="3"
+                      [(ngModel)]="adminNotes"
+                      placeholder="Add any notes about this review..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeTestimonialModal()">
+            Cancel
+          </button>
+          <button type="button" class="btn btn-success" (click)="approveTestimonial()">
+            <i class="bi bi-check-circle"></i> Approve
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reject Testimonial Modal -->
+  <div *ngIf="selectedTestimonial && adminNotes !== undefined" class="modal-backdrop show"></div>
+  <div *ngIf="selectedTestimonial && adminNotes !== undefined" class="modal show d-block">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Reject Review</h5>
+          <button type="button" class="btn-close" (click)="closeTestimonialModal()"></button>
+        </div>
+        <div class="modal-body">
+          <p><strong>Rating:</strong> {{ selectedTestimonial.rating }}/5</p>
+          <p><strong>Comment:</strong> {{ selectedTestimonial.comment }}</p>
+
+          <div class="mb-3">
+            <label class="form-label">Rejection Reason (Required)</label>
+            <textarea class="form-control" rows="3"
+                      [(ngModel)]="adminNotes"
+                      placeholder="Please explain why this review is being rejected..."
+                      required></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeTestimonialModal()">
+            Cancel
+          </button>
+          <button type="button" class="btn btn-danger"
+                  (click)="rejectTestimonial()"
+                  [disabled]="!adminNotes.trim()">
+            <i class="bi bi-x-circle"></i> Reject
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,295 @@
+<div class="product-form">
+  <form (ngSubmit)="onSubmit()">
+    <!-- Mode Selector -->
+    <div class="mode-selector">
+      <button
+        type="button"
+        class="mode-btn"
+        [class.active]="!isEditMode"
+        (click)="switchToCreateMode()"
+      >
+        Create New Product
+      </button>
+      <button
+        type="button"
+        class="mode-btn"
+        [class.active]="isEditMode"
+        (click)="switchToEditMode()"
+      >
+        Edit Product (Name & Price Only)
+      </button>
+    </div>
+
+    <!-- Edit Mode - Select Product to Edit -->
+    <div class="edit-mode-section" *ngIf="isEditMode">
+      <div class="form-group">
+        <label for="productSelect">Select Product to Edit</label>
+        <select
+          id="productSelect"
+          [(ngModel)]="selectedProductId"
+          name="selectedProductId"
+          (change)="onProductSelect()"
+          class="product-select"
+          [disabled]="isSubmitting"
+        >
+          <option value="">Select a product to edit...</option>
+          <option *ngFor="let prod of existingProducts" [value]="prod.slug">
+            {{ prod.name }} - ${{ prod.price }}
+          </option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Create Mode Form - Show All Fields -->
+    <div class="create-form" *ngIf="!isEditMode">
+      <!-- Category and Subcategory Selection -->
+      <div class="form-group">
+        <label for="category">Category *</label>
+        <select
+          id="category"
+          [(ngModel)]="product.category"
+          name="category"
+          (change)="onCategoryChange()"
+          required
+          [disabled]="isSubmitting"
+        >
+          <option value="">Select Category</option>
+          <option *ngFor="let cat of categories" [value]="cat.name">
+            {{ cat.name }}
+          </option>
+          <option value="new">+ Add New Category</option>
+        </select>
+        <input
+          *ngIf="product.category === 'new'"
+          type="text"
+          [(ngModel)]="newCategoryName"
+          name="newCategoryName"
+          placeholder="Enter new category name"
+          class="new-category-input"
+          [disabled]="isSubmitting"
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="subcategory">Subcategory *</label>
+        <select
+          id="subcategory"
+          [(ngModel)]="selectedSubcategory"
+          name="selectedSubcategory"
+          (change)="onSubcategoryChange()"
+          [disabled]="isSubmitting"
+        >
+          <option value="">Select Subcategory</option>
+          <option *ngFor="let sub of filteredSubcategories" [value]="sub.name">
+            {{ sub.name }}
+          </option>
+          <option value="new">+ Add New Subcategory</option>
+        </select>
+        <div *ngIf="selectedSubcategory === 'new'">
+          <input
+            type="text"
+            [(ngModel)]="product.subcategory"
+            name="newSubcategory"
+            placeholder="Enter new subcategory name"
+            class="new-subcategory-input"
+            (input)="checkSubcategoryExists()"
+            [disabled]="isSubmitting"
+          >
+          <div *ngIf="subcategoryExists" class="warning-message">
+            This subcategory already exists in the selected category!
+          </div>
+        </div>
+
+        <div *ngIf="selectedSubcategory && selectedSubcategory !== 'new'">
+          <input type="hidden" [(ngModel)]="product.subcategory" name="subcategory" [value]="selectedSubcategory">
+        </div>
+      </div>
+
+      <!-- Product Name -->
+      <div class="form-group">
+        <label for="name">Product Name *</label>
+        <input
+          type="text"
+          id="name"
+          [(ngModel)]="product.name"
+          name="name"
+          required
+          [disabled]="isSubmitting"
+        >
+      </div>
+
+      <!-- Description -->
+      <div class="form-group">
+        <label for="description">Description</label>
+        <textarea
+          id="description"
+          [(ngModel)]="product.description"
+          name="description"
+          rows="3"
+          [disabled]="isSubmitting"
+        ></textarea>
+      </div>
+
+      <!-- Price and Stock -->
+      <div class="form-row">
+        <div class="form-group">
+          <label for="price">Price *</label>
+          <input
+            type="number"
+            id="price"
+            [(ngModel)]="product.price"
+            name="price"
+            min="0"
+            step="0.01"
+            required
+            [disabled]="isSubmitting"
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="stock">Stock *</label>
+          <input
+            type="number"
+            id="stock"
+            [(ngModel)]="product.stock"
+            name="stock"
+            min="0"
+            required
+            [disabled]="isSubmitting"
+          >
+        </div>
+      </div>
+
+      <!-- Image Upload -->
+      <div class="form-group">
+        <label for="image">Product Image</label>
+        <input
+          type="file"
+          id="image"
+          (change)="onFileSelected($event)"
+          accept="image/*"
+          [disabled]="isSubmitting"
+        >
+      </div>
+    </div>
+
+    <!-- Edit Mode Form - Show Only Name and Price -->
+    <div class="edit-form" *ngIf="isEditMode && selectedProductForEdit">
+      <!-- Only Name and Price are editable -->
+      <div class="form-group">
+        <label for="editName">Product Name *</label>
+        <input
+          type="text"
+          id="editName"
+          [(ngModel)]="product.name"
+          name="editName"
+          required
+          [disabled]="isSubmitting"
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="editPrice">Price *</label>
+        <input
+          type="number"
+          id="editPrice"
+          [(ngModel)]="product.price"
+          name="editPrice"
+          min="0"
+          step="0.01"
+          required
+          [disabled]="isSubmitting"
+        >
+      </div>
+    </div>
+
+    <!-- Form Actions -->
+    <div class="form-actions">
+      <button
+        type="button"
+        (click)="cancelEdit()"
+        class="btn-cancel"
+        *ngIf="isEditMode && selectedProductForEdit"
+        [disabled]="isSubmitting"
+      >
+        Cancel Edit
+      </button>
+
+      <button
+        type="button"
+        (click)="cancel()"
+        class="btn-cancel"
+        *ngIf="!isEditMode || !selectedProductForEdit"
+        [disabled]="isSubmitting"
+      >
+        Cancel
+      </button>
+
+      <button
+        type="submit"
+        [disabled]="isSubmitting || (isEditMode && !selectedProductForEdit)"
+        class="btn-submit"
+      >
+        {{
+          isSubmitting ? 'Processing...' :
+          isEditMode ? 'Update Name & Price' : 'Create Product'
+        }}
+      </button>
+    </div>
+  </form>
+</div>
+
+<!-- قسم عرض الـ Products الحالية -->
+<div class="existing-products-section">
+  <h3>Existing Products</h3>
+
+  <div *ngIf="existingProducts.length === 0" class="no-products">
+    No products found. Create your first product!
+  </div>
+
+  <div class="products-grid" *ngIf="existingProducts.length > 0">
+    <div class="product-card" *ngFor="let product of existingProducts">
+      <div class="product-card-header">
+        <h4>{{ product.name }}</h4>
+        <span class="product-price">${{ product.price }}</span>
+      </div>
+
+      <div class="product-card-body">
+        <p class="product-description" *ngIf="product.description">
+          {{ product.description | slice:0:100 }}{{ product.description.length > 100 ? '...' : '' }}
+        </p>
+
+        <!-- حذف قسم Category و Subcategory من العرض -->
+
+        <div class="product-details">
+          <span class="stock-info">
+            <i class="stock-icon">📦</i> Stock: {{ product.stock }}
+          </span>
+          <span class="created-date" *ngIf="product.createdAt">
+            {{ product.createdAt | date:'shortDate' }}
+          </span>
+        </div>
+      </div>
+
+      <div class="product-card-footer">
+        <div class="product-actions">
+          <button
+            class="btn-edit"
+            (click)="startEditProduct(product)"
+            [disabled]="isSubmitting"
+          >
+            <i class="edit-icon">✏️</i> Edit Name & Price
+          </button>
+
+          <button
+            class="btn-delete"
+            (click)="deleteProduct(product.slug, product.name)"
+            [disabled]="isSubmitting"
+          >
+            <i class="delete-icon">🗑️</i> Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

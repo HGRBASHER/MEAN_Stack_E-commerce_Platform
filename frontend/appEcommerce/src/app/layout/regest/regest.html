@@ -1,0 +1,11 @@
+<h1>Create Account</h1>
+
+<form [formGroup]="regestForm" (ngSubmit)="onSubmit()" class="register-form">
+  <label for="name">Full Name: </label> <input type="text" placeholder="Enter your full name" formControlName="name" >
+  <label for="email">Email: </label> <input type="email" placeholder="Enter your email" formControlName="email" >
+  <label for="password">Password: </label><input type="password" placeholder="Enter your password (min. 6 characters)" formControlName="password" >
+  <button type="submit">Regest</button>
+  @if(this.sccessMessage === true){<p class="success-message">Regest Sccess</p>}
+  @if(this.alreadyHaveAccount === true){<p class="error-message">Already have an account</p>}
+  <a routerLink="/login" class="login-link" routerLinkActive="activeLink">Already have an account? Login</a>
+</form>

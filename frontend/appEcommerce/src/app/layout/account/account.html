@@ -1,0 +1,389 @@
+<div class="account-container">
+  <!-- رسائل التنبيه -->
+  <div class="alert-container">
+    @if (errorMessage) {
+      <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        {{ errorMessage }}
+        <button type="button" class="btn-close" (click)="errorMessage = ''"></button>
+      </div>
+    }
+    @if (successMessage) {
+      <div class="alert alert-success alert-dismissible fade show" role="alert">
+        {{ successMessage }}
+        <button type="button" class="btn-close" (click)="successMessage = ''"></button>
+      </div>
+    }
+  </div>
+@if (loading) {
+    <div class="text-center py-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      <p class="mt-2">Loading your account...</p>
+    </div>
+  } @else {
+    <div class="row">
+      <!-- العمود الأيسر: معلومات الحساب -->
+      <div class="col-lg-4">
+        <div class="card mb-4">
+          <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Account Information</h5>
+          </div>
+          <div class="card-body">
+            <div class="text-center mb-4">
+              <div class="avatar-placeholder">
+                {{ user?.name?.charAt(0) || 'U' }}
+              </div>
+              <h4 class="mt-3">{{ user?.name }}</h4>
+              <p class="text-muted">{{ user?.email }}</p>
+            </div>
+
+            <div class="user-info">
+              <div class="info-item">
+                <span class="info-label">Member Since</span>
+                <span class="info-value">{{ formatDate(user?.createdAt) }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Total Orders</span>
+                <span class="info-value">{{ userOrders.length || 0 }}</span>
+              </div>
+            </div>
+
+            <div class="d-grid gap-2 mt-4">
+              <button
+                class="btn btn-outline-primary"
+                (click)="editMode = 'profile'"
+                [disabled]="editMode === 'profile'">
+                Edit Profile
+              </button>
+              <button
+                class="btn btn-outline-secondary"
+                (click)="editMode = 'password'"
+                [disabled]="editMode === 'password'">
+                Change Password
+              </button>
+              <button class="btn btn-danger" (click)="logout()">
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- العمود الأيمن: المحتوى الديناميكي -->
+      <div class="col-lg-8">
+        <!-- تعديل الملف الشخصي -->
+        @if (editMode === 'profile') {
+          <div class="card mb-4">
+            <div class="card-header">
+              <h5 class="mb-0">Edit Profile</h5>
+            </div>
+            <div class="card-body">
+              <form [formGroup]="profileForm" (ngSubmit)="updateProfile()">
+                <div class="mb-3">
+                  <label class="form-label">Full Name</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    formControlName="name"
+                    [class.is-invalid]="profileForm.get('name')?.invalid && profileForm.get('name')?.touched">
+                  @if (profileForm.get('name')?.invalid && profileForm.get('name')?.touched) {
+                    <div class="invalid-feedback">
+                      Name is required
+                    </div>
+                  }
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label">Email Address</label>
+                  <input
+                    type="email"
+                    class="form-control"
+                    formControlName="email"
+                    [class.is-invalid]="profileForm.get('email')?.invalid && profileForm.get('email')?.touched">
+                  @if (profileForm.get('email')?.invalid && profileForm.get('email')?.touched) {
+                    <div class="invalid-feedback">
+                      Please enter a valid email
+                    </div>
+                  }
+                </div>
+                    <div class="d-flex gap-2">
+                  <button type="submit" class="btn btn-primary" [disabled]="profileForm.invalid">
+                    Save Changes
+                  </button>
+                  <button type="button" class="btn btn-secondary" (click)="cancelEdit()">
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        }
+
+        <!-- تغيير كلمة المرور -->
+        @if (editMode === 'password') {
+          <div class="card mb-4">
+            <div class="card-header">
+              <h5 class="mb-0">Change Password</h5>
+            </div>
+            <div class="card-body">
+              <form [formGroup]="passwordForm" (ngSubmit)="changePassword()">
+                <div class="mb-3">
+                  <label class="form-label">Current Password</label>
+                  <input
+                    type="password"
+                    class="form-control"
+                    formControlName="currentPassword"
+                    [class.is-invalid]="passwordForm.get('currentPassword')?.invalid && passwordForm.get('currentPassword')?.touched">
+                  @if (passwordForm.get('currentPassword')?.invalid && passwordForm.get('currentPassword')?.touched) {
+                    <div class="invalid-feedback">
+                      Current password is required
+                    </div>
+                  }
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label">New Password</label>
+                  <input
+                    type="password"
+                    class="form-control"
+                    formControlName="newPassword"
+                    [class.is-invalid]="passwordForm.get('newPassword')?.invalid && passwordForm.get('newPassword')?.touched">
+                  @if (passwordForm.get('newPassword')?.invalid && passwordForm.get('newPassword')?.touched) {
+                    <div class="invalid-feedback">
+                      New password must be at least 6 characters
+                    </div>
+                  }
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label">Confirm New Password</label>
+                  <input
+                    type="password"
+                    class="form-control"
+                    formControlName="confirmPassword"
+                    [class.is-invalid]="passwordForm.get('confirmPassword')?.invalid && passwordForm.get('confirmPassword')?.touched">
+                  @if (passwordForm.get('confirmPassword')?.invalid && passwordForm.get('confirmPassword')?.touched) {
+                    <div class="invalid-feedback">
+                      Please confirm your new password
+                    </div>
+                  }
+                </div>
+
+                <div class="d-flex gap-2">
+                  <button type="submit" class="btn btn-primary" [disabled]="passwordForm.invalid">
+                    Change Password
+                  </button>
+                  <button type="button" class="btn btn-secondary" (click)="cancelEdit()">
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        }
+
+        <!-- طلباتي -->
+        <div class="card mb-4">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">My Orders</h5>
+            <span class="badge bg-primary">{{ userOrders.length || 0 }}</span>
+          </div>
+          <div class="card-body">
+            @if (loadingOrders) {
+              <div class="text-center py-3">
+                <div class="spinner-border spinner-border-sm" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-2">Loading orders...</p>
+              </div>
+            } @else if (userOrders.length === 0) {
+              <div class="text-center py-4">
+                <i class="bi bi-cart fs-1 text-muted"></i>
+                <p class="mt-2">No orders yet</p>
+                <a routerLink="/shop" class="btn btn-outline-primary mt-2">Start Shopping</a>
+              </div>
+            } @else {
+              <div class="table-responsive">
+                <table class="table table-hover">
+                  <thead>
+                    <tr>
+                      <th>Order ID</th>
+                      <th>Date</th>
+                      <th>Total</th>
+                      <th>Status</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (order of userOrders; track order._id) {
+                      <tr>
+                        <td>
+                          <small class="text-muted">#{{ order._id?.slice(-8) }}</small>
+                        </td>
+                        <td>{{ formatDate(order.createdAt) }}</td>
+                        <td>${{ order.totalPrice?.toFixed(2) }}</td>
+                        <td>
+                          <span class="badge" [ngClass]="getStatusBadgeClass(order.status)">
+                            {{ order.status }}
+                          </span>
+                        </td>
+                        <td>
+                          <div class="btn-group btn-group-sm">
+                            <button
+                              class="btn btn-outline-primary"
+                              [routerLink]="['/order']">
+                              View
+                            </button>
+                            @if (canAddReview(order)) {
+                              <button
+                                class="btn btn-outline-success"
+                                (click)="openReviewForm(order)">
+                                Add Review
+                              </button>
+                            } @else {
+                              <span class="badge bg-light text-dark ms-2">
+                                {{ getTestimonialStatus(order) }}
+                              </span>
+                            }
+                          </div>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- testimonials الخاصة بي -->
+        <div class="card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">My Reviews</h5>
+            <span class="badge bg-primary">{{ myTestimonials.length || 0 }}</span>
+          </div>
+          <div class="card-body">
+            @if (loadingTestimonials) {
+              <div class="text-center py-3">
+                <div class="spinner-border spinner-border-sm" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-2">Loading reviews...</p>
+              </div>
+            } @else if (myTestimonials.length === 0) {
+              <div class="text-center py-4">
+                <i class="bi bi-chat-left-text fs-1 text-muted"></i>
+                <p class="mt-2">No reviews yet</p>
+                <p class="text-muted">Add reviews to your delivered orders</p>
+              </div>
+            } @else {
+              <div class="testimonials-list">
+                @for (testimonial of myTestimonials; track testimonial._id) {
+                  <div class="testimonial-item mb-3 p-3 border rounded">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                      <div>
+                        <strong>Order #{{ testimonial.order?._id?.slice(-8) || 'N/A' }}</strong>
+                        <span class="badge ms-2" [ngClass]="{
+                          'bg-warning': testimonial.status === 'pending',
+                          'bg-success': testimonial.status === 'approved',
+                          'bg-danger': testimonial.status === 'rejected'
+                        }">
+                          {{ testimonial.status }}
+                        </span>
+                      </div>
+                      <div class="rating">
+                        @for (star of [1,2,3,4,5]; track star) {
+                          <i class="bi"
+                             [class.bi-star-fill]="star <= testimonial.rating"
+                             [class.bi-star]="star > testimonial.rating"
+                             [class.text-warning]="star <= testimonial.rating"
+                             [class.text-muted]="star > testimonial.rating"></i>
+                        }
+                      </div>
+                    </div>
+                    <p class="mb-0">{{ testimonial.comment }}</p>
+                    <small class="text-muted">{{ formatDate(testimonial.createdAt) }}</small>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Modal إضافة Review -->
+  @if (showReviewModal) {
+    <div class="modal-backdrop show" (click)="closeReviewModal()"></div>
+    <div class="modal show d-block" tabindex="-1">
+      <div class="modal-dialog" (click)="$event.stopPropagation()">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Add Review for Order #{{ selectedOrderForReview?._id?.slice(-8) }}</h5>
+            <button type="button" class="btn-close" (click)="closeReviewModal()"></button>
+          </div>
+          <div class="modal-body">
+            <form [formGroup]="reviewForm" (ngSubmit)="submitReview()">
+              <!-- حقل Rating -->
+              <div class="mb-4">
+                <label class="form-label">Rating</label>
+                <div class="rating-input">
+                  @for (star of [1,2,3,4,5]; track star) {
+                    <button
+                      type="button"
+                      class="star-btn"
+                      (click)="reviewForm.patchValue({ rating: star })">
+                      <i class="bi"
+                         [class.bi-star-fill]="star <= reviewForm.value.rating!"
+                         [class.bi-star]="star > reviewForm.value.rating!"
+                         [class.text-warning]="star <= reviewForm.value.rating!"
+                         [class.text-muted]="star > reviewForm.value.rating!"></i>
+                    </button>
+                  }
+                </div>
+                @if (reviewForm.get('rating')?.invalid && reviewForm.get('rating')?.touched) {
+                  <div class="invalid-feedback d-block">
+                    Please select a rating
+                  </div>
+                }
+              </div>
+
+              <!-- حقل التعليق -->
+              <div class="mb-4">
+                <label class="form-label">Review Comment</label>
+                <textarea
+                  class="form-control"
+                  formControlName="comment"
+                  rows="4"
+                  placeholder="Share your experience with this order..."
+                  [class.is-invalid]="reviewForm.get('comment')?.invalid && reviewForm.get('comment')?.touched"></textarea>
+                @if (reviewForm.get('comment')?.invalid && reviewForm.get('comment')?.touched) {
+                  <div class="invalid-feedback">
+                    @if (reviewForm.get('comment')?.errors?.['required']) {
+                      <div>Comment is required</div>
+                    }
+                    @if (reviewForm.get('comment')?.errors?.['minlength']) {
+                      <div>Comment must be at least 10 characters</div>
+                    }
+                  </div>
+                }
+                <small class="text-muted">Minimum 10 characters required</small>
+              </div>
+
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" (click)="closeReviewModal()">
+                  Cancel
+                </button>
+                <button type="submit" class="btn btn-primary" [disabled]="reviewForm.invalid">
+                  Submit Review
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>

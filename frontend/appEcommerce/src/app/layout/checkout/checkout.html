@@ -1,0 +1,208 @@
+<!-- checkout.html -->
+<div class="checkout-container">
+  <div class="row">
+    <!-- الجانب الأيسر: الفورم -->
+    <div class="col-lg-8">
+      <!-- رسائل الخطأ والنجاح -->
+      <div *ngIf="errorMessage" class="alert alert-danger">
+        {{ errorMessage }}
+        <button *ngIf="errorMessage.includes('login')"
+                (click)="goToLogin()"
+                class="btn btn-sm btn-outline-primary ms-2">
+          Login
+        </button>
+      </div>
+
+      <div *ngIf="successMessage" class="alert alert-success">
+        {{ successMessage }}
+      </div>
+
+      <!-- Loading -->
+      <div *ngIf="loading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2">Loading checkout...</p>
+      </div>
+
+      <!-- الفورم (يظهر بعد التحميل) -->
+      <form *ngIf="!loading" [formGroup]="checkoutForm" (ngSubmit)="submitOrder()">
+
+        <!-- معلومات المستخدم (تلقائية) -->
+        <div class="card mb-4">
+          <div class="card-header bg-light">
+            <h5 class="mb-0">👤 Your Information</h5>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Full Name</label>
+                <input type="text" formControlName="name" class="form-control" readonly>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Email</label>
+                <input type="email" formControlName="email" class="form-control" readonly>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- معلومات الشحن -->
+        <div class="card mb-4">
+          <div class="card-header bg-light">
+            <h5 class="mb-0"> Shipping Address</h5>
+          </div>
+          <div class="card-body">
+            <!-- رقم التليفون -->
+            <div class="mb-3">
+              <label class="form-label">Phone Number *</label>
+              <input type="tel" formControlName="phone" class="form-control"
+                    placeholder="01001234567">
+              <div *ngIf="phone?.invalid && phone?.touched" class="text-danger small mt-1">
+                Please enter a valid phone number (at least 10 digits)
+              </div>
+            </div>
+
+            <!-- العنوان -->
+            <div class="mb-3">
+              <label class="form-label">Street Address *</label>
+              <textarea formControlName="address" class="form-control" rows="3"
+                        placeholder="123 Main Street, Building No., Apartment No."></textarea>
+              <div *ngIf="address?.invalid && address?.touched" class="text-danger small mt-1">
+                Please enter your complete address
+              </div>
+            </div>
+
+<div class="row">
+  <div class="col-md-6 mb-3">
+    <label class="form-label">City *</label>
+    <input type="text" formControlName="city" class="form-control"
+           placeholder="Cairo">
+    <div *ngIf="city?.invalid && city?.touched" class="text-danger small mt-1">
+      Please enter your city
+    </div>
+  </div>
+  <div class="col-md-6 mb-3">
+    <label class="form-label">Country *</label>
+    <!-- تغيير من select إلى input -->
+    <input type="text" formControlName="country" class="form-control"
+           placeholder="Egypt" value="Egypt">
+    <div *ngIf="country?.invalid && country?.touched" class="text-danger small mt-1">
+      Please enter your country
+    </div>
+  </div>
+</div>
+
+            <!-- الملاحظات -->
+            <div class="mb-3">
+              <label class="form-label">Order Notes (Optional)</label>
+              <textarea formControlName="notes" class="form-control" rows="2"
+                        placeholder="Delivery instructions, special requests..."></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- طريقة الدفع -->
+        <div class="card mb-4">
+          <div class="card-header bg-light">
+            <h5 class="mb-0">💳 Payment Method</h5>
+          </div>
+          <div class="card-body">
+            <div class="form-check mb-2">
+              <input class="form-check-input" type="radio"
+                     formControlName="paymentMethod"
+                     value="cash" id="cash">
+              <label class="form-check-label" for="cash">
+                  Cash on Delivery
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stock Check Status -->
+        <div *ngIf="checkingStock" class="alert alert-info">
+          <i class="spinner-border spinner-border-sm me-2"></i>
+          Checking stock availability...
+        </div>
+
+        <!-- Stock Issues -->
+        <div *ngIf="stockIssues.length > 0" class="alert alert-warning">
+          <h6>⚠️ Stock Issues Detected:</h6>
+          <ul class="mb-0">
+            <li *ngFor="let issue of stockIssues">
+              {{issue.productName}}: Available {{issue.available}}, Requested {{issue.requested}}
+            </li>
+          </ul>
+          <p class="mt-2 mb-0">Please update your cart quantities.</p>
+        </div>
+
+        <!-- أزرار -->
+        <div class="d-flex justify-content-between mt-4">
+          <button type="button" (click)="goBackToCart()" class="btn btn-secondary">
+            ← Back to Cart
+          </button>
+          <button type="submit"
+                  [disabled]="checkoutForm.invalid || placingOrder || hasStockIssues"
+                  class="btn btn-primary btn-lg">
+            <span *ngIf="placingOrder">
+              <i class="spinner-border spinner-border-sm me-2"></i>
+              Placing Order...
+            </span>
+            <span *ngIf="!placingOrder" >
+              Place Order →
+            </span>
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- الجانب الأيمن: ملخص الطلب -->
+    <div class="col-lg-4">
+      <div class="card sticky-top" style="top: 20px;">
+        <div class="card-header bg-light">
+          <h5 class="mb-0">📦 Order Summary</h5>
+        </div>
+        <div class="card-body">
+
+          <!-- المنتجات -->
+          <div class="order-items mb-3">
+            <h6>Items ({{cartItems.length}})</h6>
+            <div *ngFor="let item of cartItems" class="order-item mb-2">
+              <div class="d-flex justify-content-between">
+                <div>
+                  <strong>{{getProductName(item)}}</strong>
+                  <div class="text-muted small">Qty: {{item.quantity}}</div>
+                </div>
+                <div>${{(getProductPrice(item) * item.quantity).toFixed(2)}}</div>
+              </div>
+            </div>
+          </div>
+
+          <hr>
+
+          <!-- الحسابات -->
+          <div class="order-totals">
+            <div class="d-flex justify-content-between mb-2">
+              <span>Subtotal</span>
+              <span>${{subtotal.toFixed(2)}}</span>
+            </div>
+            <div class="d-flex justify-content-between mb-2">
+              <span>Shipping</span>
+              <span>${{shippingCost.toFixed(2)}}</span>
+            </div>
+            <hr>
+            <div class="d-flex justify-content-between mb-3">
+              <strong>Total</strong>
+              <strong>${{totalPrice.toFixed(2)}}</strong>
+            </div>
+          </div>
+
+          <!-- Continue Shopping -->
+          <button (click)="continueShopping()" class="btn btn-outline-primary w-100">
+            Continue Shopping
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

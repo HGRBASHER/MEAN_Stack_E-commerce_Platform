@@ -1,0 +1,139 @@
+<div class="welcome-container">
+  <div class="welcome-card">
+    <!-- ... Welcome Section نفس الكود السابق ... -->
+  </div>
+  <div class="best-seller-section">
+    @if(loadingBestSeller) {
+      <div class="loading-best-seller">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <p>Loading best seller...</p>
+      </div>
+    } @else if(bestSellerError) {
+      <div class="no-best-seller">
+        <i class="bi bi-exclamation-circle"></i>
+        <p>{{ bestSellerError }}</p>
+      </div>
+    } @else if(bestSellerProduct) {
+      <div class="best-seller-card">
+        <div class="best-seller-badge">
+          <i class="bi bi-trophy-fill"></i> #1 Best Seller
+        </div>
+
+        <div class="best-seller-content">
+          <!-- ✅ صورة المنتج -->
+          <div class="product-image-container">
+            @if(hasImage()) {
+              <img [src]="bestSellerProduct.imageUrl"
+                   [alt]="bestSellerProduct.name"
+                   class="product-image"
+                   onerror="this.style.display='none'; this.parentElement.querySelector('.product-image-placeholder').style.display='flex'">
+              <div class="product-image-placeholder" style="display: none;">
+                {{ bestSellerProduct.name?.charAt(0) || 'P' }}
+              </div>
+            } @else {
+              <div class="product-image-placeholder">
+                {{ bestSellerProduct.name?.charAt(0) || 'P' }}
+              </div>
+            }
+          </div>
+
+          <div class="product-details">
+            <h3 class="product-name">{{ bestSellerProduct.name || 'Unknown Product' }}</h3>
+
+            <!-- ✅ السعر الأصلي -->
+            @if(bestSellerProduct.originalPrice) {
+              <div class="original-price mb-2">
+                <span class="price-label">Price:</span>
+                <span class="price-value">{{ formatCurrency(bestSellerProduct.originalPrice) }}</span>
+              </div>
+            }
+
+            <!-- ✅ الوصف المختصر -->
+            @if(bestSellerProduct.description) {
+              <p class="product-description">
+                {{ (bestSellerProduct.description.length > 100) ?
+                    (bestSellerProduct.description.substring(0, 100) + '...') :
+                    bestSellerProduct.description }}
+              </p>
+            }
+           <!-- ✅ الفئة -->
+            @if(bestSellerProduct.category) {
+              <div class="product-category">
+                <span class="badge bg-secondary">
+                  <i class="bi bi-tag"></i> {{ bestSellerProduct.category }}
+                </span>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    } @else {
+      <div class="no-best-seller">
+        <i class="bi bi-info-circle"></i>
+        <p>No best seller data available yet</p>
+      </div>
+    }
+  </div>
+
+  <!-- Customer Testimonials Section -->
+  <div class="testimonials-section">
+    <div class="section-header">
+      <h2><i class="bi bi-chat-heart"></i> What Our Customers Say</h2>
+      <p class="section-subtitle">Real reviews from happy shoppers</p>
+    </div>
+
+    @if(loadingTestimonials) {
+      <div class="loading-testimonials">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <p>Loading reviews...</p>
+      </div>
+    } @else if(testimonials.length === 0) {
+      <div class="no-testimonials">
+        <i class="bi bi-chat-left-text"></i>
+        <p>No reviews yet. Be the first to share your experience!</p>
+      </div>
+    } @else {
+      <div class="testimonials-grid">
+        @for(testimonial of testimonials; track testimonial._id) {
+          <div class="testimonial-card">
+            <div class="testimonial-header">
+              <div class="customer-avatar">
+                {{ getUserInitial(testimonial) }}
+              </div>
+              <div class="customer-info">
+                <h4>{{ getUserName(testimonial) }}</h4>
+                <div class="rating-stars">
+                  @for(star of [1,2,3,4,5]; track star) {
+                    <i class="bi"
+                       [class.bi-star-fill]="star <= testimonial.rating"
+                       [class.bi-star]="star > testimonial.rating"
+                       [class.text-warning]="star <= testimonial.rating"></i>
+                  }
+                  <span class="rating-text">{{ testimonial.rating }}/5</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="testimonial-body">
+              <p class="testimonial-text">"{{ testimonial.comment }}"</p>
+            </div>
+
+            <div class="testimonial-footer">
+              <small class="text-muted">
+                <i class="bi bi-calendar"></i>
+                {{ testimonial.createdAt | date:'mediumDate' }}
+              </small>
+              <span class="verified-badge">
+                <i class="bi bi-patch-check-fill text-success"></i> Verified Purchase
+              </span>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>

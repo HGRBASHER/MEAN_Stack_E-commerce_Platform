@@ -1,0 +1,37 @@
+<div class="product-detail-container">
+  @if(product) {
+    <div class="product-main">
+      <div class="product-image">
+        <img [src]="staticURL + '/' + product.imgURL" alt="{{product.name}}">
+      </div>
+      <div class="product-info">
+        <h1>{{product.name}}</h1>
+        <p class="product-desc"></p>
+        <p class="product-price">Price: {{product.price}}$</p>
+        <p class="product-price">Description: {{product.description}}</p>
+        <p class="product-price">Category: {{product.slug}}</p>
+
+
+      </div>
+    </div>
+  }
+
+  <div class="related-products-section">
+    <h3>Related Products</h3>
+    <div class="related-products-grid">
+      @for(product of relatedProducts; track product) {
+        <div class="related-product-card">
+          <img [src]="staticURL + '/' + product.imgURL" alt="{{product.name}}">
+          <div class="related-product-content">
+            <h3>{{product.name}}</h3>
+            <p>Price: {{product.price}}$</p>
+            <a class="related-product-link" [routerLink]="'/products/' + product.slug" routerLinkActive="activeLink">
+              <span>🔍</span>
+              More Details
+            </a>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</div>
