@@ -1,13 +1,13 @@
-# 🛒 MEAN Stack E-Commerce Platform
+#  MEAN Stack E-Commerce Platform
 
 A full-stack E-Commerce web application built using the **MEAN Stack** (MongoDB, Express.js, Angular, Node.js).
 The platform provides a complete online shopping experience with authentication, product management, cart functionality, and order handling.
 
 ---
 
-## 🚀 Features
+##  Features
 
-### 👤 User Features
+###  User Features
 
 * User Registration & Login
 * JWT Authentication & Authorization
@@ -18,7 +18,7 @@ The platform provides a complete online shopping experience with authentication,
 * Order Management
 * Responsive UI Design
 
-### 🛠️ Admin Features
+###  Admin Features
 
 * Add New Products
 * Update Product Information
@@ -28,7 +28,7 @@ The platform provides a complete online shopping experience with authentication,
 
 ---
 
-## 🧰 Tech Stack
+##  Tech Stack
 
 ### Frontend
 
@@ -54,7 +54,7 @@ The platform provides a complete online shopping experience with authentication,
 
 ---
 
-## 📂 Project Structure
+##  Project Structure
 
 ```bash
 MEAN_Stack_E-commerce_Platform/
@@ -72,26 +72,26 @@ MEAN_Stack_E-commerce_Platform/
 
 ## ⚙️ Installation & Setup
 
-### 1️⃣ Clone the Repository
+###  Clone the Repository
 
 ```bash
 git clone https://github.com/HGRBASHER/MEAN_Stack_E-commerce_Platform.git
 ```
 
-### 2️⃣ Navigate to Project Folder
+###  Navigate to Project Folder
 
 ```bash
 cd MEAN_Stack_E-commerce_Platform
 ```
 
-### 3️⃣ Install Backend Dependencies
+###  Install Backend Dependencies
 
 ```bash
 cd backend
 npm install
 ```
 
-### 4️⃣ Install Frontend Dependencies
+###  Install Frontend Dependencies
 
 ```bash
 cd ../frontend
@@ -100,7 +100,7 @@ npm install
 
 ---
 
-## ▶️ Run the Application
+##  Run the Application
 
 ### Start Backend Server
 
@@ -123,8 +123,7 @@ http://localhost:4200
 ```
 
 ---
-
-## 🔐 Environment Variables
+##  Environment Variables
 
 Create a `.env` file inside the backend folder and add:
 
@@ -136,13 +135,13 @@ JWT_SECRET=your_secret_key
 
 ---
 
-## 📸 Screenshots
+##  Screenshots
 
 *Add your project screenshots here.*
 
 ---
 
-## 📌 Future Enhancements
+##  Future Enhancements
 
 * Online Payment Integration
 * Wishlist Feature
@@ -152,7 +151,7 @@ JWT_SECRET=your_secret_key
 
 ---
 
-## 👩‍💻 Author
+##  Author
 
 Developed by Hagar Eid
 
